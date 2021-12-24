@@ -9,9 +9,7 @@ import {
   TokenDayData,
   TokenHourData,
   Bundle,
-  PoolHourData,
-  TickDayData,
-  Tick
+  PoolHourData
 } from './../types/schema'
 import { FACTORY_ADDRESS } from './constants'
 import { ethereum } from '@graphprotocol/graph-ts'
@@ -61,8 +59,6 @@ export function updatePoolDayData(event: ethereum.Event): PoolDayData {
     poolDayData.volumeUSD = ZERO_BD
     poolDayData.feesUSD = ZERO_BD
     poolDayData.txCount = ZERO_BI
-    poolDayData.feeGrowthGlobal0X128 = ZERO_BI
-    poolDayData.feeGrowthGlobal1X128 = ZERO_BI
     if (pool) {
       poolDayData.pool = pool.id
       poolDayData.open = pool.token0Price
@@ -82,8 +78,6 @@ export function updatePoolDayData(event: ethereum.Event): PoolDayData {
   
     poolDayData.liquidity = pool.liquidity
     poolDayData.sqrtPrice = pool.sqrtPrice
-    poolDayData.feeGrowthGlobal0X128 = pool.feeGrowthGlobal0X128
-    poolDayData.feeGrowthGlobal1X128 = pool.feeGrowthGlobal1X128
     poolDayData.token0Price = pool.token0Price
     poolDayData.token1Price = pool.token1Price
     poolDayData.close = pool.token0Price
@@ -116,8 +110,6 @@ export function updatePoolHourData(event: ethereum.Event): PoolHourData {
     poolHourData.volumeUSD = ZERO_BD
     poolHourData.txCount = ZERO_BI
     poolHourData.feesUSD = ZERO_BD
-    poolHourData.feeGrowthGlobal0X128 = ZERO_BI
-    poolHourData.feeGrowthGlobal1X128 = ZERO_BI
 
     if (pool) {
       poolHourData.pool = pool.id
@@ -140,8 +132,6 @@ export function updatePoolHourData(event: ethereum.Event): PoolHourData {
     poolHourData.sqrtPrice = pool.sqrtPrice
     poolHourData.token0Price = pool.token0Price
     poolHourData.token1Price = pool.token1Price
-    poolHourData.feeGrowthGlobal0X128 = pool.feeGrowthGlobal0X128
-    poolHourData.feeGrowthGlobal1X128 = pool.feeGrowthGlobal1X128
     poolHourData.close = pool.token0Price
     poolHourData.tick = pool.tick
     poolHourData.tvlUSD = pool.totalValueLockedUSD
@@ -244,30 +234,4 @@ export function updateTokenHourData(token: Token, event: ethereum.Event): TokenH
   }
 
   return tokenHourData as TokenHourData
-}
-
-export function updateTickDayData(tick: Tick, event: ethereum.Event): TickDayData {
-  let timestamp = event.block.timestamp.toI32()
-  let dayID = timestamp / 86400
-  let dayStartTimestamp = dayID * 86400
-  let tickDayDataID = tick.id.concat('-').concat(dayID.toString())
-  let tickDayData = TickDayData.load(tickDayDataID)
-  if (tickDayData === null) {
-    tickDayData = new TickDayData(tickDayDataID)
-    tickDayData.date = dayStartTimestamp
-    tickDayData.pool = tick.pool
-    tickDayData.tick = tick.id
-  }
-  tickDayData.liquidityGross = tick.liquidityGross
-  tickDayData.liquidityNet = tick.liquidityNet
-  tickDayData.volumeToken0 = tick.volumeToken0
-  tickDayData.volumeToken1 = tick.volumeToken0
-  tickDayData.volumeUSD = tick.volumeUSD
-  tickDayData.feesUSD = tick.feesUSD
-  tickDayData.feeGrowthOutside0X128 = tick.feeGrowthOutside0X128
-  tickDayData.feeGrowthOutside1X128 = tick.feeGrowthOutside1X128
-
-  tickDayData.save()
-
-  return tickDayData as TickDayData
 }
